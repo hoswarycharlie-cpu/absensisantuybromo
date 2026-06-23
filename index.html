@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    html, body { width: 100%; margin: 0; padding: 0; font-size: 16px; overflow-x: hidden; background-color: #f2f7f7; background-image: radial-gradient(#20b2aa 0.6px, transparent 0.6px), radial-gradient(#20b2aa 0.6px, #f2f7f7 0.6px); background-size: 24px 24px; background-position: 0 0, 12px 12px; color: #2d3748; }
+    * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    
+    .navbar { background: linear-gradient(135deg, #008080, #20b2aa); color: white; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,128,128,0.15); }
+    .navbar-kiri { display: flex; align-items: center; gap: 12px; }
+    .navbar .menu-btn { font-size: 26px; cursor: pointer; display: none; margin-right: 5px; }
+    .navbar-logo { height: 35px; width: auto; object-fit: contain; }
+    .navbar h3 { font-size: 20px; font-weight: 600; margin: 0; letter-spacing: 0.5px; }
+
+    .sidebar { height: 100%; width: 280px; position: fixed; top: 0; left: -280px; background-color: #ffffff; box-shadow: 4px 0 15px rgba(0,0,0,0.1); transition: 0.3s; z-index: 1000; padding-top: 60px; }
+    .sidebar a { padding: 18px 25px; text-decoration: none; font-size: 16px; color: #4a5568; display: block; border-bottom: 1px solid #edf2f7; transition: 0.2s; }
+    .sidebar a:hover { background-color: #e6f2f2; color: #008080; padding-left: 30px; }
+    .sidebar .close-btn { position: absolute; top: 10px; right: 20px; font-size: 35px; border: none; background: none; color: #718096; }
+
+    .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:900; display:none; backdrop-filter: blur(2px); }
+
+    .main-content { padding: 15px; width: 100%; max-width: 600px; margin: auto; min-height: calc(100vh - 60px); display: flex; flex-direction: column; justify-content: center; }
+    .card { background: rgba(255, 255, 255, 0.95); padding: 35px 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 80, 80, 0.08); margin-bottom: 20px; width: 100%; border: 1px solid rgba(32, 178, 170, 0.2); }
+    
+    .logo-container-login { text-align: center; margin-bottom: 25px; }
+    .logo-img-login { max-width: 120px; height: auto; object-fit: contain; }
+
+    input, select { width: 100%; padding: 15px !important; margin: 12px 0; border-radius: 10px; border: 1px solid #cbd5e0; font-size: 16px !important; background: #f7fafc; transition: 0.2s; }
+    input:focus, select:focus { border-color: #20b2aa; background: #ffffff; outline: none; box-shadow: 0 0 0 3px rgba(32, 178, 170, 0.15); }
+
+    button { width: 100%; padding: 15px !important; margin: 10px 0; border-radius: 10px; border: none; font-size: 16px !important; font-weight: 600; cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
+    button:active { transform: scale(0.98); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    
+    .btn-primary { background: linear-gradient(135deg, #008080, #20b2aa); color: white; box-shadow: 0 4px 12px rgba(0, 128, 128, 0.2); }
+    .btn-success { background: #2cd46e; color: white; box-shadow: 0 4px 12px rgba(44, 212, 110, 0.2); }
+    .btn-danger { background: #f56565; color: white; box-shadow: 0 4px 12px rgba(245, 101, 101, 0.2); }
+    .btn-outline { background: transparent; color: #008080; border: 1.5px solid #008080; }
+    .btn-small { padding: 14px 15px; font-size: 16px; margin: 8px 0; }
+
+    .box-area { border: 2px dashed #20b2aa; border-radius: 14px; padding: 25px 15px; background: #f0fdfa; margin-bottom: 15px; text-align: center; }
+    #photoPreview { width: 100%; max-width: 250px; border-radius: 12px; margin: 15px auto; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 3px solid #ffffff; }
+
+    .hidden { display: none !important; }
+    .text-center { text-align: center; }
+    .badge { background: #e6f2f2; color: #008080; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; border: 1px solid rgba(0, 128, 128, 0.15); }
+    
+    .stats-container { display: flex; gap: 12px; margin-bottom: 25px; }
+    .stat-box { flex: 1; padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .stat-hadir { background: #e6f7ee; border: 1px solid rgba(35, 169, 92, 0.3); }
+    .stat-telat { background: #fff5f5; border: 1px solid rgba(229, 62, 62, 0.3); }
+    .stat-title { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+    .stat-number { font-size: 26px; font-weight: 700; line-height: 1; }
+
+    .history-card-title { font-size: 16px; font-weight: 600; color: #008080; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; }
+    .history-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #edf2f7; font-size: 15px; }
+    
+    .status-tepat { color: #23a95c; font-weight: 600; background: #e6f7ee; padding: 6px 12px; border-radius: 6px; font-size: 14px; }
+    .status-telat { color: #e53e3e; font-weight: 600; background: #fff5f5; padding: 6px 12px; border-radius: 6px; font-size: 14px; }
+
+    .admin-filter-group { display: flex; gap: 10px; margin-bottom: 15px; }
+    .admin-filter-group div { flex: 1; }
+    .admin-filter-group label { font-size: 12px; font-weight: 600; color: #4a5568; }
+    .admin-filter-group input { margin: 4px 0; padding: 10px; font-size: 14px; }
+    .karyawan-row { background: #ffffff; border: 1px solid #edf2f7; border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+    .karyawan-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="navbar" id="topNav">
+    <div class="navbar-kiri">
+      <span class="menu-btn" id="menuBtn" onclick="openNav()">&#9776;</span>
+      <img src="https://drive.google.com/uc?export=view&id=1Wv9r1brY5nIzr5xoO9froDJTVpNY7St1" onerror="this.style.display='none'" class="navbar-logo" alt="Logo">
+      <h3 id="navTitle">HRIS Karyawan</h3>
+    </div>
+  </div>
+
+  <div id="mySidebar" class="sidebar">
+    <a href="javascript:void(0)" class="close-btn" onclick="closeNav()">&times;</a>
+    <div style="padding: 0 25px 10px 25px;">
+      <h4 style="color:#008080; margin-bottom:5px;" id="sideName">Nama User</h4>
+      <span class="badge" id="sideShift">Shift</span>
+    </div>
+    <div id="menuKaryawan">
+      <a href="#" onclick="showPage('dashboard-page'); closeNav();">Dashboard</a>
+      <a href="#" onclick="showHistory(); closeNav();">Riwayat Absensi</a>
+      <a href="#" onclick="showPage('password-page'); closeNav();">Ganti Password</a>
+    </div>
+    <a href="#" onclick="logout()" style="color: #e53e3e;">Logout</a>
+  </div>
+  <div id="overlay" class="overlay" onclick="closeNav()"></div>
+
+  <div class="main-content">
+    
+    <div id="login-page" class="card">
+      <div class="logo-container-login">
+        <img src="https://drive.google.com/uc?export=view&id=1Wv9r1brY5nIzr5xoO9froDJTVpNY7St1" onerror="this.style.display='none'" class="logo-img-login" alt="Logo">
+      </div>
+      <h2 class="text-center" style="margin-bottom: 25px; color: #008080; font-weight: 600;">Login Masuk</h2>
+      <input type="text" id="userLogin" placeholder="Username">
+      <input type="password" id="passLogin" placeholder="Password">
+      <button class="btn-primary" id="btnLogin" onclick="doLogin()">Masuk ke Portal</button>
+    </div>
+
+    <div id="dashboard-page" class="card hidden">
+      <div class="text-center" style="margin-bottom: 25px;">
+        <h3 id="displayName" style="margin-bottom: 8px; font-weight: 600; color: #2d3748; font-size: 22px;">-</h3>
+        <span class="badge" id="displayShift">-</span>
+      </div>
+
+      <div class="stats-container">
+        <div class="stat-box stat-hadir">
+          <div class="stat-title" style="color: #23a95c;">Total Hadir</div>
+          <div class="stat-number" style="color: #1a7a42;" id="countHadir">0</div>
+        </div>
+        <div class="stat-box stat-telat">
+          <div class="stat-title" style="color: #e53e3e;">Total Telat</div>
+          <div class="stat-number" style="color: #c53030;" id="countTelat">0</div>
+        </div>
+      </div>
+      
+      <div class="box-area">
+        <input type="file" id="cameraInput" accept="image/*" capture="user" style="display: none;" onchange="handleNativePhoto(event)">
+        <button class="btn-primary btn-small" onclick="document.getElementById('cameraInput').click()">📸 Buka Kamera / Ambil Foto</button>
+      </div>
+
+      <div class="text-center">
+        <img id="photoPreview" alt="Hasil Foto">
+        <p id="camStatus" style="font-size: 14px; color: #e53e3e; margin-bottom: 15px; font-weight: 500;">*Wajib memiliki foto sebelum absen</p>
+      </div>
+
+      <canvas id="canvas" class="hidden"></canvas>
+      <div id="statusArea" class="text-center" style="margin-bottom: 20px; min-height: 45px;">
+        <p id="status" style="font-size: 15px; color: #718096; font-weight: 500;">Siap untuk absensi.</p>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button class="btn-success" id="btnIn" onclick="doAbsen('Clock In')">Clock In</button>
+        <button class="btn-danger" id="btnOut" onclick="doAbsen('Clock Out')">Clock Out</button>
+      </div>
+
+      <div style="margin-top: 40px; border-top: 2px dashed #e2e8f0; padding-top: 25px;">
+        <div class="history-card-title">📅 Riwayat Hari Ini:</div>
+        <div id="dashboardHistoryList"></div>
+      </div>
+    </div>
+
+    <div id="admin-page" class="card hidden">
+      <h3 style="color: #008080; font-weight: 600; margin-bottom: 5px;">Rekap Absensi</h3>
+      <p style="font-size: 13px; color: #718096; margin-bottom: 20px;">Halaman rahasia Owner</p>
+      
+      <div class="admin-filter-group">
+        <div>
+          <label>Mulai Tanggal</label>
+          <input type="date" id="filterMulai" onchange="loadAdminData()">
+        </div>
+        <div>
+          <label>Sampai Tanggal</label>
+          <input type="date" id="filterSampai" onchange="loadAdminData()">
+        </div>
+      </div>
+      <div style="margin-bottom: 20px;">
+        <button class="btn-outline btn-small" style="margin: 0;" onclick="resetAdminFilter()">🔄 Reset Filter (Semua Waktu)</button>
+      </div>
+      <div id="adminKaryawanList">Memuat rekap data...</div>
+    </div>
+
+    <div id="history-page" class="card hidden">
+      <h3 style="margin-bottom: 20px; color: #008080; font-weight: 600;">Riwayat Absensi</h3>
+      <div id="historyList"></div>
+      <button class="btn-outline" style="margin-top:25px;" onclick="showPage('dashboard-page')">Kembali</button>
+    </div>
+
+    <div id="password-page" class="card hidden">
+      <h3 style="margin-bottom: 25px; color: #008080; font-weight: 600;">Ubah Password</h3>
+      <input type="password" id="oldPwd" placeholder="Password Lama">
+      <input type="password" id="newPwd" placeholder="Password Baru">
+      <button class="btn-primary" onclick="doChangePassword()">Simpan Password</button>
+      <button class="btn-outline" onclick="showPage('dashboard-page')">Batal</button>
+    </div>
+
+  </div>
+
+  <script>
+    // ========================================================
+    // PASTE LINK WEB APP GOOGLE APPS SCRIPT ANDA DI SINI !!!
+    // ========================================================
+    const API_URL = "https://script.google.com/macros/s/AKfycbxz2fuZnn1q0BJzl7uSoe6VYf6AONgaigSrzKMXA2GRkNgi7esrNX1x5cq-dDCs2E2m/exec";
+
+    let currentUser = { user: "", nama: "", shift: "" };
+    let currentPhotoDataUrl = null; 
+
+    async function callAPI(actionData) {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(actionData)
+        });
+        return await response.json();
+      } catch (error) {
+        return { success: false, message: "Koneksi ke server gagal: " + error.message };
+      }
+    }
+
+    function openNav() { document.getElementById("mySidebar").style.left = "0"; document.getElementById("overlay").style.display = "block"; }
+    function closeNav() { document.getElementById("mySidebar").style.left = "-280px"; document.getElementById("overlay").style.none = "none"; }
+    function showPage(pageId) {
+      document.querySelectorAll('.card').forEach(el => el.classList.add('hidden'));
+      document.getElementById(pageId).classList.remove('hidden');
+    }
+
+    async function doLogin() {
+      const u = document.getElementById('userLogin').value;
+      const p = document.getElementById('passLogin').value;
+      if(!u || !p) return alert("Username dan Password wajib diisi!");
+      
+      const btn = document.getElementById('btnLogin');
+      btn.innerText = "Memeriksa..."; btn.disabled = true;
+
+      const res = await callAPI({ action: "loginAuth", username: u, password: p });
+      btn.innerText = "Masuk ke Portal"; btn.disabled = false;
+
+      if(res.success) {
+        currentUser = { user: u, nama: res.nama, shift: res.shift };
+        document.getElementById('sideName').innerText = res.nama;
+        document.getElementById('sideShift').innerText = "Shift: " + res.shift;
+        document.getElementById('menuBtn').style.display = "block";
+
+        if(u.toLowerCase() === 'admin' || res.shift === 'Owner') {
+          document.getElementById('navTitle').innerText = "HRIS Admin Portal";
+          document.getElementById('menuKaryawan').classList.add('hidden');
+          showPage('admin-page');
+          loadAdminData();
+        } else {
+          document.getElementById('navTitle').innerText = "HRIS Karyawan";
+          document.getElementById('menuKaryawan').classList.remove('hidden');
+          document.getElementById('displayName').innerText = res.nama;
+          document.getElementById('displayShift').innerText = "Shift: " + res.shift;
+          showPage('dashboard-page');
+          loadDashboardHistory();
+        }
+      } else {
+        alert(res.message);
+      }
+    }
+
+    function handleNativePhoto(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      document.getElementById('camStatus').innerText = "⏳ Memproses foto...";
+      document.getElementById('camStatus').style.color = "#718096";
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.getElementById('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = 400; 
+          canvas.height = img.height * (400 / img.width);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          currentPhotoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          
+          document.getElementById('photoPreview').src = currentPhotoDataUrl;
+          document.getElementById('photoPreview').style.display = "block";
+          document.getElementById('camStatus').innerText = "✅ Foto siap!";
+          document.getElementById('camStatus').style.color = "#23a95c";
+        }
+        img.src = e.target.result;
+      }
+      reader.readAsDataURL(file);
+    }
+
+    function doAbsen(actionType) {
+      if (!currentPhotoDataUrl) return alert("📸 Ambil foto wajah dulu!");
+      const statusText = document.getElementById('status');
+      statusText.innerText = "📍 Mengambil lokasi... (Harap tunggu)";
+      
+      document.getElementById('btnIn').disabled = true;
+      document.getElementById('btnOut').disabled = true;
+
+      const geoOptions = { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 };
+
+      navigator.geolocation.getCurrentPosition(async pos => {
+        statusText.innerText = "⏳ Menyimpan data ke server API...";
+        
+        const res = await callAPI({ 
+          action: "processHRIS", 
+          username: currentUser.user, 
+          nama: currentUser.nama, 
+          shift: currentUser.shift, 
+          actionAbsen: actionType, 
+          lat: pos.coords.latitude, 
+          lon: pos.coords.longitude, 
+          base64Data: currentPhotoDataUrl 
+        });
+
+        document.getElementById('btnIn').disabled = false;
+        document.getElementById('btnOut').disabled = false;
+
+        if (res.success) {
+          let warnaStatus = (res.statusAbsen === "Telat") ? "#e53e3e" : "#23a95c";
+          let teksStatus = (res.statusAbsen === "Telat") ? "Telat" : "Hadir";
+          statusText.innerHTML = `<strong style="color: #23a95c; font-size: 16px;">✅ ${actionType} Berhasil!</strong><br><span style="color: ${warnaStatus}; font-weight: 600; font-size: 15px;">Status: ${teksStatus}</span>`;
+          
+          currentPhotoDataUrl = null;
+          document.getElementById('photoPreview').style.display = "none";
+          document.getElementById('camStatus').innerText = "*Wajib memiliki foto sebelum absen";
+          document.getElementById('camStatus').style.color = "#e53e3e";
+          loadDashboardHistory(); 
+        } else {
+          alert(res.message);
+          statusText.innerText = "Siap untuk absensi.";
+        }
+      }, err => {
+        let errorMsg = "Izin lokasi diperlukan!";
+        if (err.code === 3) errorMsg = "Sinyal GPS lemah, pindah ke tempat terbuka.";
+        alert("Gagal: " + errorMsg);
+        statusText.innerText = "Siap untuk absensi.";
+        document.getElementById('btnIn').disabled = false;
+        document.getElementById('btnOut').disabled = false;
+      }, geoOptions);
+    }
+
+    async function loadDashboardHistory() {
+      const container = document.getElementById('dashboardHistoryList');
+      container.innerHTML = "<p style='font-size:14px; color:#a0aec0;'>Memuat data...</p>";
+      
+      const res = await callAPI({ action: "getUserHistory", username: currentUser.user });
+      
+      if(res) {
+        document.getElementById('countHadir').innerText = res.totalHadir;
+        document.getElementById('countTelat').innerText = res.totalTelat;
+        let html = "";
+        if(res.history && res.history.length > 0) {
+          res.history.forEach(d => {
+            let badgeClass = (d.status === "Telat") ? "status-telat" : "status-tepat";
+            html += `<div class="history-item">
+                      <span><strong>${d.aksi}</strong> <br><small style="color:#718096;">${d.waktu}</small></span>
+                      <span class="${badgeClass}">${d.status}</span>
+                    </div>`;
+          });
+        } else html = "<p style='font-size:14px; color:#a0aec0; text-align:center; padding: 10px 0;'>Belum ada riwayat.</p>";
+        container.innerHTML = html;
+      }
+    }
+
+    async function showHistory() {
+      showPage('history-page');
+      document.getElementById('historyList').innerHTML = "Memuat data...";
+      const res = await callAPI({ action: "getUserHistory", username: currentUser.user });
+      let html = "";
+      if(res.history && res.history.length > 0) {
+        res.history.forEach(d => {
+          let badgeClass = (d.status === "Telat") ? "status-telat" : "status-tepat";
+          html += `<div class="history-item">
+                    <span><strong>${d.aksi}</strong> <br><small style="color:#718096;">${d.waktu}</small></span>
+                    <span class="${badgeClass}">${d.status}</span>
+                  </div>`;
+        });
+      } else html = "<p style='text-align:center; color:#718096;'>Belum ada riwayat.</p>";
+      document.getElementById('historyList').innerHTML = html;
+    }
+
+    async function loadAdminData() {
+      const listContainer = document.getElementById('adminKaryawanList');
+      listContainer.innerHTML = "<p style='font-size:14px; color:#a0aec0; text-align:center;'>Menghitung rekap data absensi API...</p>";
+
+      const mulai = document.getElementById('filterMulai').value;
+      const sampai = document.getElementById('filterSampai').value;
+
+      const data = await callAPI({ action: "getAdminRekap", tglMulai: mulai, tglSampai: sampai });
+      
+      let html = "";
+      if (data && data.length > 0) {
+        data.forEach(k => {
+          html += `<div class="karyawan-row">
+                    <div style="font-weight: 600; font-size: 17px; color: #2d3748;">${k.nama}</div>
+                    <div style="font-size: 13px; color: #718096; margin-top: 2px;">Username: <strong>${k.username}</strong> | Shift: ${k.shift}</div>
+                    <div class="karyawan-meta">
+                      <span class="status-tepat">🟢 Hadir: <strong>${k.hadir}x</strong></span>
+                      <span class="status-telat">🔴 Telat: <strong>${k.telat}x</strong></span>
+                    </div>
+                  </div>`;
+        });
+      } else html = "<p style='font-size:14px; color:#718096; text-align:center; padding: 20px 0;'>Tidak ada data absensi.</p>";
+      
+      listContainer.innerHTML = html;
+    }
+
+    function resetAdminFilter() {
+      document.getElementById('filterMulai').value = "";
+      document.getElementById('filterSampai').value = "";
+      loadAdminData();
+    }
+
+    async function doChangePassword() {
+      const oldP = document.getElementById('oldPwd').value;
+      const newP = document.getElementById('newPwd').value;
+      if(!oldP || !newP) return alert("Harap isi kedua kolom password!");
+      
+      const res = await callAPI({ action: "updatePassword", username: currentUser.user, oldPwd: oldP, newPwd: newP });
+      alert(res.message);
+      if(res.success) {
+        document.getElementById('oldPwd').value = ""; document.getElementById('newPwd').value = "";
+        showPage('dashboard-page');
+      }
+    }
+
+    function logout() {
+      currentUser = { user: "", nama: "", shift: "" };
+      document.getElementById('userLogin').value = "";
+      document.getElementById('passLogin').value = "";
+      document.getElementById('menuBtn').style.display = "none";
+      document.getElementById('status').innerText = "Siap untuk absensi.";
+      closeNav();
+      showPage('login-page');
+    }
+  </script>
+</body>
+</html>
