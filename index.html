@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <!-- MENGUNDUH OTAK AI FACE RECOGNITION -->
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
@@ -131,7 +132,6 @@
       <div class="text-center">
         <img id="photoPreview" alt="Hasil Foto">
         <p id="aiStatus" style="font-size: 14px; font-weight: 600; margin-top: 15px; color: #718096;"></p>
-        
         <button id="btnDaftarWajah" class="btn-warning btn-small hidden" onclick="daftarWajah()">🤖 Daftarkan Wajah Saya Sekarang</button>
       </div>
 
@@ -182,6 +182,7 @@
     // PASTE LINK WEB APP GOOGLE APPS SCRIPT ANDA DI SINI !!!
     // ========================================================
     const API_URL = "https://script.google.com/macros/s/AKfycbztspNpnpuaEqsaon_kkWGig_l93tOko1_UWXbyGwExwN5ur3QPGY9giOhql1VtNZCr/exec";
+
     let currentUser = { user: "", nama: "", shift: "", faceData: "" };
     let currentPhotoDataUrl = null; 
     
@@ -266,7 +267,10 @@
     function handleNativePhoto(event) {
       const file = event.target.files[0];
       if (!file) return;
-      document.getElementById('aiStatus').innerText = "⏳ Mengekstrak gambar...";
+
+      // FIX: Langsung kunci tombol dan reset ingatan memori saat foto baru dipilih
+      document.getElementById('btnIn').disabled = true;
+      document.getElementById('aiStatus').innerText = "⏳ Mengekstrak gambar baru...";
       document.getElementById('aiStatus').style.color = "#718096";
 
       const reader = new FileReader();
@@ -283,7 +287,11 @@
           document.getElementById('photoPreview').src = currentPhotoDataUrl;
           document.getElementById('photoPreview').style.display = "block";
           
-          setTimeout(scanWajahAI, 100);
+          // FIX: Kosongkan memori tombol kamera supaya nggak nyangkut
+          document.getElementById('cameraInput').value = "";
+          
+          // Memberi waktu tambahan 300ms agar browser benar-benar menempelkan foto baru ke layar
+          setTimeout(scanWajahAI, 300);
         }
         img.src = e.target.result;
       }
@@ -291,11 +299,13 @@
     }
 
     async function scanWajahAI() {
-      document.getElementById('aiStatus').innerText = "🤖 AI sedang memindai wajah Anda...";
+      document.getElementById('aiStatus').innerText = "🤖 AI sedang memindai wajah baru Anda...";
       
       if(!isAiLoaded) await loadAiModels();
-      const imgHtml = document.getElementById('photoPreview');
-      const detection = await faceapi.detectSingleFace(imgHtml).withFaceLandmarks().withFaceDescriptor();
+      
+      // FIX: Paksa AI membaca langsung dari 'Canvas' murni (bukan bayangan gambar)
+      const canvasHtml = document.getElementById('canvas');
+      const detection = await faceapi.detectSingleFace(canvasHtml).withFaceLandmarks().withFaceDescriptor();
       
       if(!detection) {
         document.getElementById('aiStatus').innerText = "❌ Wajah tidak terdeteksi! Foto ulang di tempat terang.";
