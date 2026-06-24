@@ -73,7 +73,7 @@
     <div class="navbar-kiri">
       <span class="menu-btn" id="menuBtn" onclick="openNav()">&#9776;</span>
       <img src="https://drive.google.com/uc?export=view&id=1Wv9r1brY5nIzr5xoO9froDJTVpNY7St1" onerror="this.style.display='none'" class="navbar-logo" alt="Logo">
-      <h3 id="navTitle">HRIS Karyawan</h3>
+      <h3 id="navTitle">Absensi Karyawan CSB</h3>
     </div>
   </div>
 
@@ -230,12 +230,12 @@
         document.getElementById('menuBtn').style.display = "block";
 
         if(u.toLowerCase() === 'admin' || res.shift === 'Owner') {
-          document.getElementById('navTitle').innerText = "HRIS Admin Portal";
+          document.getElementById('navTitle').innerText = "Owner CSB";
           document.getElementById('menuKaryawan').classList.add('hidden');
           showPage('admin-page');
           loadAdminData();
         } else {
-          document.getElementById('navTitle').innerText = "HRIS Karyawan";
+          document.getElementById('navTitle').innerText = "Absensi Karyawan CSB";
           document.getElementById('menuKaryawan').classList.remove('hidden');
           document.getElementById('displayName').innerText = res.nama;
           document.getElementById('displayShift').innerText = "Shift: " + res.shift;
