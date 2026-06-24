@@ -206,7 +206,7 @@
     }
 
     function openNav() { document.getElementById("mySidebar").style.left = "0"; document.getElementById("overlay").style.display = "block"; }
-    function closeNav() { document.getElementById("mySidebar").style.left = "-280px"; document.getElementById("overlay").style.none = "none"; }
+    function closeNav() { document.getElementById("mySidebar").style.left = "-280px"; document.getElementById("overlay").style.display = "none"; }
     function showPage(pageId) {
       document.querySelectorAll('.card').forEach(el => el.classList.add('hidden'));
       document.getElementById(pageId).classList.remove('hidden');
