@@ -2,6 +2,8 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
     html, body { width: 100%; margin: 0; padding: 0; font-size: 16px; overflow-x: hidden; background-color: #f2f7f7; background-image: radial-gradient(#20b2aa 0.6px, transparent 0.6px), radial-gradient(#20b2aa 0.6px, #f2f7f7 0.6px); background-size: 24px 24px; background-position: 0 0, 12px 12px; color: #2d3748; }
@@ -31,13 +33,13 @@
 
     button { width: 100%; padding: 15px !important; margin: 10px 0; border-radius: 10px; border: none; font-size: 16px !important; font-weight: 600; cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
     button:active { transform: scale(0.98); }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
     
     .btn-primary { background: linear-gradient(135deg, #008080, #20b2aa); color: white; box-shadow: 0 4px 12px rgba(0, 128, 128, 0.2); }
-    .btn-success { background: #2cd46e; color: white; box-shadow: 0 4px 12px rgba(44, 212, 110, 0.2); }
-    .btn-danger { background: #f56565; color: white; box-shadow: 0 4px 12px rgba(245, 101, 101, 0.2); }
+    .btn-success { background: #2cd46e; color: white; box-shadow: 0 4px 12px rgba(44, 212, 110, 0.2); padding: 18px !important; font-size: 18px !important; border-radius: 12px; }
     .btn-outline { background: transparent; color: #008080; border: 1.5px solid #008080; }
-    .btn-small { padding: 14px 15px; font-size: 16px; margin: 8px 0; }
+    .btn-small { padding: 14px 15px !important; font-size: 16px !important; margin: 8px 0; }
+    .btn-warning { background: linear-gradient(135deg, #d69e2e, #ecc94b); color: white; margin-top: 15px; }
 
     .box-area { border: 2px dashed #20b2aa; border-radius: 14px; padding: 25px 15px; background: #f0fdfa; margin-bottom: 15px; text-align: center; }
     #photoPreview { width: 100%; max-width: 250px; border-radius: 12px; margin: 15px auto; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 3px solid #ffffff; }
@@ -73,7 +75,7 @@
     <div class="navbar-kiri">
       <span class="menu-btn" id="menuBtn" onclick="openNav()">&#9776;</span>
       <img src="https://drive.google.com/uc?export=view&id=1Wv9r1brY5nIzr5xoO9froDJTVpNY7St1" onerror="this.style.display='none'" class="navbar-logo" alt="Logo">
-      <h3 id="navTitle">Absensi Karyawan CSB</h3>
+      <h3 id="navTitle">HRIS Karyawan</h3>
     </div>
   </div>
 
@@ -128,17 +130,18 @@
 
       <div class="text-center">
         <img id="photoPreview" alt="Hasil Foto">
-        <p id="camStatus" style="font-size: 14px; color: #e53e3e; margin-bottom: 15px; font-weight: 500;">*Wajib memiliki foto sebelum absen</p>
+        <p id="aiStatus" style="font-size: 14px; font-weight: 600; margin-top: 15px; color: #718096;"></p>
+        
+        <button id="btnDaftarWajah" class="btn-warning btn-small hidden" onclick="daftarWajah()">🤖 Daftarkan Wajah Saya Sekarang</button>
       </div>
 
       <canvas id="canvas" class="hidden"></canvas>
-      <div id="statusArea" class="text-center" style="margin-bottom: 20px; min-height: 45px;">
+      <div id="statusArea" class="text-center" style="margin-top: 25px; margin-bottom: 10px; min-height: 45px;">
         <p id="status" style="font-size: 15px; color: #718096; font-weight: 500;">Siap untuk absensi.</p>
       </div>
 
-      <div style="display: flex; gap: 12px;">
-        <button class="btn-success" id="btnIn" onclick="doAbsen('Clock In')">Clock In</button>
-        <button class="btn-danger" id="btnOut" onclick="doAbsen('Clock Out')">Clock Out</button>
+      <div style="text-align: center; margin-top: 10px;">
+        <button class="btn-success" id="btnIn" disabled onclick="doAbsen('Clock In')">✅ Clock In Sekarang</button>
       </div>
 
       <div style="margin-top: 40px; border-top: 2px dashed #e2e8f0; padding-top: 25px;">
@@ -150,20 +153,11 @@
     <div id="admin-page" class="card hidden">
       <h3 style="color: #008080; font-weight: 600; margin-bottom: 5px;">Rekap Absensi</h3>
       <p style="font-size: 13px; color: #718096; margin-bottom: 20px;">Halaman rahasia Owner</p>
-      
       <div class="admin-filter-group">
-        <div>
-          <label>Mulai Tanggal</label>
-          <input type="date" id="filterMulai" onchange="loadAdminData()">
-        </div>
-        <div>
-          <label>Sampai Tanggal</label>
-          <input type="date" id="filterSampai" onchange="loadAdminData()">
-        </div>
+        <div><label>Mulai Tanggal</label><input type="date" id="filterMulai" onchange="loadAdminData()"></div>
+        <div><label>Sampai Tanggal</label><input type="date" id="filterSampai" onchange="loadAdminData()"></div>
       </div>
-      <div style="margin-bottom: 20px;">
-        <button class="btn-outline btn-small" style="margin: 0;" onclick="resetAdminFilter()">🔄 Reset Filter (Semua Waktu)</button>
-      </div>
+      <div style="margin-bottom: 20px;"><button class="btn-outline btn-small" style="margin: 0;" onclick="resetAdminFilter()">🔄 Reset Filter (Semua Waktu)</button></div>
       <div id="adminKaryawanList">Memuat rekap data...</div>
     </div>
 
@@ -187,10 +181,14 @@
     // ========================================================
     // PASTE LINK WEB APP GOOGLE APPS SCRIPT ANDA DI SINI !!!
     // ========================================================
-    const API_URL = "https://script.google.com/macros/s/AKfycbxz2fuZnn1q0BJzl7uSoe6VYf6AONgaigSrzKMXA2GRkNgi7esrNX1x5cq-dDCs2E2m/exec";
+    const API_URL = "LINK_API_ANDA_DISINI";
 
-    let currentUser = { user: "", nama: "", shift: "" };
+    let currentUser = { user: "", nama: "", shift: "", faceData: "" };
     let currentPhotoDataUrl = null; 
+    
+    const AI_MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+    let isAiLoaded = false;
+    let currentFaceDescriptor = null;
 
     async function callAPI(actionData) {
       try {
@@ -203,6 +201,17 @@
       } catch (error) {
         return { success: false, message: "Koneksi ke server gagal: " + error.message };
       }
+    }
+
+    async function loadAiModels() {
+      if(isAiLoaded) return;
+      try {
+        await faceapi.nets.ssdMobilenetv1.loadFromUri(AI_MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.loadFromUri(AI_MODEL_URL);
+        await faceapi.nets.faceRecognitionNet.loadFromUri(AI_MODEL_URL);
+        isAiLoaded = true;
+        console.log("Model AI Wajah Siap!");
+      } catch(e) { console.log("Gagal memuat AI:", e); }
     }
 
     function openNav() { document.getElementById("mySidebar").style.left = "0"; document.getElementById("overlay").style.display = "block"; }
@@ -224,21 +233,29 @@
       btn.innerText = "Masuk ke Portal"; btn.disabled = false;
 
       if(res.success) {
-        currentUser = { user: u, nama: res.nama, shift: res.shift };
+        currentUser = { user: u, nama: res.nama, shift: res.shift, faceData: res.faceData };
         document.getElementById('sideName').innerText = res.nama;
         document.getElementById('sideShift').innerText = "Shift: " + res.shift;
         document.getElementById('menuBtn').style.display = "block";
 
         if(u.toLowerCase() === 'admin' || res.shift === 'Owner') {
-          document.getElementById('navTitle').innerText = "Owner CSB";
+          document.getElementById('navTitle').innerText = "HRIS Admin Portal";
           document.getElementById('menuKaryawan').classList.add('hidden');
           showPage('admin-page');
           loadAdminData();
         } else {
-          document.getElementById('navTitle').innerText = "Absensi Karyawan CSB";
+          document.getElementById('navTitle').innerText = "HRIS Karyawan";
           document.getElementById('menuKaryawan').classList.remove('hidden');
           document.getElementById('displayName').innerText = res.nama;
           document.getElementById('displayShift').innerText = "Shift: " + res.shift;
+          
+          loadAiModels(); 
+          
+          document.getElementById('btnIn').disabled = true;
+          document.getElementById('aiStatus').innerText = "*Wajib memiliki foto dan verifikasi wajah sebelum absen";
+          document.getElementById('aiStatus').style.color = "#e53e3e";
+          document.getElementById('btnDaftarWajah').classList.add('hidden');
+
           showPage('dashboard-page');
           loadDashboardHistory();
         }
@@ -250,8 +267,8 @@
     function handleNativePhoto(event) {
       const file = event.target.files[0];
       if (!file) return;
-      document.getElementById('camStatus').innerText = "⏳ Memproses foto...";
-      document.getElementById('camStatus').style.color = "#718096";
+      document.getElementById('aiStatus').innerText = "⏳ Mengekstrak gambar...";
+      document.getElementById('aiStatus').style.color = "#718096";
 
       const reader = new FileReader();
       reader.onload = function(e) {
@@ -266,12 +283,80 @@
           
           document.getElementById('photoPreview').src = currentPhotoDataUrl;
           document.getElementById('photoPreview').style.display = "block";
-          document.getElementById('camStatus').innerText = "✅ Foto siap!";
-          document.getElementById('camStatus').style.color = "#23a95c";
+          
+          setTimeout(scanWajahAI, 100);
         }
         img.src = e.target.result;
       }
       reader.readAsDataURL(file);
+    }
+
+    async function scanWajahAI() {
+      document.getElementById('aiStatus').innerText = "🤖 AI sedang memindai wajah Anda...";
+      
+      if(!isAiLoaded) await loadAiModels();
+      const imgHtml = document.getElementById('photoPreview');
+      const detection = await faceapi.detectSingleFace(imgHtml).withFaceLandmarks().withFaceDescriptor();
+      
+      if(!detection) {
+        document.getElementById('aiStatus').innerText = "❌ Wajah tidak terdeteksi! Foto ulang di tempat terang.";
+        document.getElementById('aiStatus').style.color = "#e53e3e";
+        document.getElementById('btnIn').disabled = true;
+        currentFaceDescriptor = null;
+        return;
+      }
+
+      currentFaceDescriptor = detection.descriptor;
+
+      if (!currentUser.faceData || currentUser.faceData.trim() === "") {
+        document.getElementById('aiStatus').innerText = "⚠️ Wajah belum terdaftar di sistem. Silakan klik tombol di bawah!";
+        document.getElementById('aiStatus').style.color = "#d69e2e";
+        document.getElementById('btnDaftarWajah').classList.remove('hidden');
+      } 
+      else {
+        const savedArray = JSON.parse(currentUser.faceData);
+        const savedDescriptor = new Float32Array(savedArray);
+        const distance = faceapi.euclideanDistance(currentFaceDescriptor, savedDescriptor);
+        
+        if (distance > 0.55) { 
+           document.getElementById('aiStatus').innerText = "❌ WAJAH TIDAK COCOK! Akses Absen Ditolak.";
+           document.getElementById('aiStatus').style.color = "#e53e3e";
+           document.getElementById('btnIn').disabled = true;
+        } else {
+           document.getElementById('aiStatus').innerText = "✅ Verifikasi Wajah Lulus (Akurat)!";
+           document.getElementById('aiStatus').style.color = "#23a95c";
+           document.getElementById('btnIn').disabled = false;
+        }
+      }
+    }
+
+    async function daftarWajah() {
+      if(!currentFaceDescriptor) return alert("Silakan ambil foto wajah dengan jelas terlebih dahulu!");
+      
+      document.getElementById('btnDaftarWajah').innerText = "Memproses...";
+      document.getElementById('btnDaftarWajah').disabled = true;
+      document.getElementById('aiStatus').innerText = "⏳ Menyimpan Sandi Wajah ke Server...";
+      
+      const arrayWajah = Array.from(currentFaceDescriptor);
+      const stringDataWajah = JSON.stringify(arrayWajah);
+      const res = await callAPI({ action: "registerFace", username: currentUser.user, faceData: stringDataWajah });
+      
+      if(res.success) {
+        alert("Pendaftaran Wajah Berhasil! Anda sekarang sudah bisa Absen.");
+        currentUser.faceData = stringDataWajah; 
+        
+        document.getElementById('btnDaftarWajah').classList.add('hidden');
+        document.getElementById('btnDaftarWajah').innerText = "🤖 Daftarkan Wajah Saya Sekarang";
+        document.getElementById('btnDaftarWajah').disabled = false;
+        
+        document.getElementById('aiStatus').innerText = "✅ Wajah Terdaftar! Silakan klik Clock In.";
+        document.getElementById('aiStatus').style.color = "#23a95c";
+        document.getElementById('btnIn').disabled = false;
+      } else {
+        alert("Gagal menyimpan wajah: " + res.message);
+        document.getElementById('btnDaftarWajah').innerText = "🤖 Daftarkan Wajah Saya Sekarang";
+        document.getElementById('btnDaftarWajah').disabled = false;
+      }
     }
 
     function doAbsen(actionType) {
@@ -280,7 +365,6 @@
       statusText.innerText = "📍 Mengambil lokasi... (Harap tunggu)";
       
       document.getElementById('btnIn').disabled = true;
-      document.getElementById('btnOut').disabled = true;
 
       const geoOptions = { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 };
 
@@ -288,18 +372,9 @@
         statusText.innerText = "⏳ Menyimpan data ke server API...";
         
         const res = await callAPI({ 
-          action: "processHRIS", 
-          username: currentUser.user, 
-          nama: currentUser.nama, 
-          shift: currentUser.shift, 
-          actionAbsen: actionType, 
-          lat: pos.coords.latitude, 
-          lon: pos.coords.longitude, 
-          base64Data: currentPhotoDataUrl 
+          action: "processHRIS", username: currentUser.user, nama: currentUser.nama, shift: currentUser.shift, 
+          actionAbsen: actionType, lat: pos.coords.latitude, lon: pos.coords.longitude, base64Data: currentPhotoDataUrl 
         });
-
-        document.getElementById('btnIn').disabled = false;
-        document.getElementById('btnOut').disabled = false;
 
         if (res.success) {
           let warnaStatus = (res.statusAbsen === "Telat") ? "#e53e3e" : "#23a95c";
@@ -308,12 +383,13 @@
           
           currentPhotoDataUrl = null;
           document.getElementById('photoPreview').style.display = "none";
-          document.getElementById('camStatus').innerText = "*Wajib memiliki foto sebelum absen";
-          document.getElementById('camStatus').style.color = "#e53e3e";
+          document.getElementById('aiStatus').innerText = "*Wajib memiliki foto sebelum absen";
+          document.getElementById('aiStatus').style.color = "#e53e3e";
           loadDashboardHistory(); 
         } else {
           alert(res.message);
           statusText.innerText = "Siap untuk absensi.";
+          document.getElementById('btnIn').disabled = false;
         }
       }, err => {
         let errorMsg = "Izin lokasi diperlukan!";
@@ -321,16 +397,13 @@
         alert("Gagal: " + errorMsg);
         statusText.innerText = "Siap untuk absensi.";
         document.getElementById('btnIn').disabled = false;
-        document.getElementById('btnOut').disabled = false;
       }, geoOptions);
     }
 
     async function loadDashboardHistory() {
       const container = document.getElementById('dashboardHistoryList');
       container.innerHTML = "<p style='font-size:14px; color:#a0aec0;'>Memuat data...</p>";
-      
       const res = await callAPI({ action: "getUserHistory", username: currentUser.user });
-      
       if(res) {
         document.getElementById('countHadir').innerText = res.totalHadir;
         document.getElementById('countTelat').innerText = res.totalTelat;
@@ -338,10 +411,7 @@
         if(res.history && res.history.length > 0) {
           res.history.forEach(d => {
             let badgeClass = (d.status === "Telat") ? "status-telat" : "status-tepat";
-            html += `<div class="history-item">
-                      <span><strong>${d.aksi}</strong> <br><small style="color:#718096;">${d.waktu}</small></span>
-                      <span class="${badgeClass}">${d.status}</span>
-                    </div>`;
+            html += `<div class="history-item"><span><strong>${d.aksi}</strong> <br><small style="color:#718096;">${d.waktu}</small></span><span class="${badgeClass}">${d.status}</span></div>`;
           });
         } else html = "<p style='font-size:14px; color:#a0aec0; text-align:center; padding: 10px 0;'>Belum ada riwayat.</p>";
         container.innerHTML = html;
@@ -356,10 +426,7 @@
       if(res.history && res.history.length > 0) {
         res.history.forEach(d => {
           let badgeClass = (d.status === "Telat") ? "status-telat" : "status-tepat";
-          html += `<div class="history-item">
-                    <span><strong>${d.aksi}</strong> <br><small style="color:#718096;">${d.waktu}</small></span>
-                    <span class="${badgeClass}">${d.status}</span>
-                  </div>`;
+          html += `<div class="history-item"><span><strong>${d.aksi}</strong> <br><small style="color:#718096;">${d.waktu}</small></span><span class="${badgeClass}">${d.status}</span></div>`;
         });
       } else html = "<p style='text-align:center; color:#718096;'>Belum ada riwayat.</p>";
       document.getElementById('historyList').innerHTML = html;
@@ -368,56 +435,31 @@
     async function loadAdminData() {
       const listContainer = document.getElementById('adminKaryawanList');
       listContainer.innerHTML = "<p style='font-size:14px; color:#a0aec0; text-align:center;'>Menghitung rekap data absensi API...</p>";
-
-      const mulai = document.getElementById('filterMulai').value;
-      const sampai = document.getElementById('filterSampai').value;
-
+      const mulai = document.getElementById('filterMulai').value; const sampai = document.getElementById('filterSampai').value;
       const data = await callAPI({ action: "getAdminRekap", tglMulai: mulai, tglSampai: sampai });
       
       let html = "";
       if (data && data.length > 0) {
-        data.forEach(k => {
-          html += `<div class="karyawan-row">
-                    <div style="font-weight: 600; font-size: 17px; color: #2d3748;">${k.nama}</div>
-                    <div style="font-size: 13px; color: #718096; margin-top: 2px;">Username: <strong>${k.username}</strong> | Shift: ${k.shift}</div>
-                    <div class="karyawan-meta">
-                      <span class="status-tepat">🟢 Hadir: <strong>${k.hadir}x</strong></span>
-                      <span class="status-telat">🔴 Telat: <strong>${k.telat}x</strong></span>
-                    </div>
-                  </div>`;
-        });
+        data.forEach(k => { html += `<div class="karyawan-row"><div style="font-weight: 600; font-size: 17px; color: #2d3748;">${k.nama}</div><div style="font-size: 13px; color: #718096; margin-top: 2px;">Username: <strong>${k.username}</strong> | Shift: ${k.shift}</div><div class="karyawan-meta"><span class="status-tepat">🟢 Hadir: <strong>${k.hadir}x</strong></span><span class="status-telat">🔴 Telat: <strong>${k.telat}x</strong></span></div></div>`; });
       } else html = "<p style='font-size:14px; color:#718096; text-align:center; padding: 20px 0;'>Tidak ada data absensi.</p>";
-      
       listContainer.innerHTML = html;
     }
 
-    function resetAdminFilter() {
-      document.getElementById('filterMulai').value = "";
-      document.getElementById('filterSampai').value = "";
-      loadAdminData();
-    }
+    function resetAdminFilter() { document.getElementById('filterMulai').value = ""; document.getElementById('filterSampai').value = ""; loadAdminData(); }
 
     async function doChangePassword() {
-      const oldP = document.getElementById('oldPwd').value;
-      const newP = document.getElementById('newPwd').value;
+      const oldP = document.getElementById('oldPwd').value; const newP = document.getElementById('newPwd').value;
       if(!oldP || !newP) return alert("Harap isi kedua kolom password!");
-      
       const res = await callAPI({ action: "updatePassword", username: currentUser.user, oldPwd: oldP, newPwd: newP });
       alert(res.message);
-      if(res.success) {
-        document.getElementById('oldPwd').value = ""; document.getElementById('newPwd').value = "";
-        showPage('dashboard-page');
-      }
+      if(res.success) { document.getElementById('oldPwd').value = ""; document.getElementById('newPwd').value = ""; showPage('dashboard-page'); }
     }
 
     function logout() {
-      currentUser = { user: "", nama: "", shift: "" };
-      document.getElementById('userLogin').value = "";
-      document.getElementById('passLogin').value = "";
-      document.getElementById('menuBtn').style.display = "none";
-      document.getElementById('status').innerText = "Siap untuk absensi.";
-      closeNav();
-      showPage('login-page');
+      currentUser = { user: "", nama: "", shift: "", faceData: "" };
+      document.getElementById('userLogin').value = ""; document.getElementById('passLogin').value = "";
+      document.getElementById('menuBtn').style.display = "none"; document.getElementById('status').innerText = "Siap untuk absensi.";
+      closeNav(); showPage('login-page');
     }
   </script>
 </body>
